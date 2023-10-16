@@ -16,6 +16,8 @@ class Server {
 
     this.dataBase();
 
+    this.routes();
+
     this.listen();
   }
 
@@ -28,6 +30,10 @@ class Server {
     this.app.use(cors());
     this.app.use(express.json());
     this.app.use(express.static("public"));
+  }
+
+  routes() {
+    this.app.use(this.path.productos, require("../routes/productos.routes"));
   }
 
   // metodo que arranca el servidor
