@@ -10,6 +10,10 @@ class Server {
 
     this.port = process.env.PORT;
 
+    this.path = {
+      productos: "/api/productos",
+    };
+
     this.dataBase();
 
     this.listen();
