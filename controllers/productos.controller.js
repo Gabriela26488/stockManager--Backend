@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Producto = require("../models/Productos");
+const objId = require("mongoose").Types.ObjectId;
 
 // funcion que valida si se encontraron errores en el express-validator
 const validarDatos = (req) => {
@@ -9,10 +10,39 @@ const validarDatos = (req) => {
   } else return null;
 };
 
+const validarId = (id) => {
+  if (!objId.isValid(id)) {
+    return false;
+  }
+  return true;
+};
+
 const mostrarProductos = async (req, res) => {
   try {
     const productos = await Producto.find();
     res.status(200).json(productos);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+};
+
+const mostrarProducto = async (req, res) => {
+  try {
+    if (!validarId(req.params.id)) {
+      return res.status(400).json({ msg: "el id ingresado no es invalido" });
+    }
+
+    const verificaExistencia = await Producto.findById(req.params.id);
+
+    if (!verificaExistencia) {
+      return res
+        .status(400)
+        .json({ msg: "el producto no se encuentra registrado" });
+    }
+
+    const producto = await Producto.findById(req.params.id);
+    res.status(200).json(producto);
   } catch (err) {
     console.log(err);
     res.status(400).json(err);
@@ -35,11 +65,42 @@ const crearProducto = async (req, res) => {
 };
 
 const editarProducto = async (req, res) => {
-  res.status(201).json("editar");
+  try {
+    if (!validarId(req.params.id)) {
+      return res.status(400).json({ msg: "el id ingresado no es invalido" });
+    }
+    const verificaExistencia = await Producto.findById(req.params.id);
+
+    if (!verificaExistencia) {
+      return res
+        .status(400)
+        .json({ msg: "el producto no se encuentra registrado" });
+    }
+
+    const validar = validarDatos(req);
+    if (validar) return res.status(400).json(validar);
+
+    const actualizado = await Producto.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
+    return res.status(200).json({ msg: "Producto actualizado", actualizado });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
 const eliminarProducto = async (req, res) => {
   try {
+    if (!validarId(req.params.id)) {
+      return res.status(400).json({ msg: "el id ingresado no es invalido" });
+    }
+
     const verificaExistencia = await Producto.findById(req.params.id);
 
     if (!verificaExistencia) {
@@ -60,6 +121,7 @@ const eliminarProducto = async (req, res) => {
 
 module.exports = {
   mostrarProductos,
+  mostrarProducto,
   crearProducto,
   editarProducto,
   eliminarProducto,

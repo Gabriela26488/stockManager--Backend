@@ -1,17 +1,16 @@
 const { Router } = require("express");
-const { mostrarProductos, crearProducto, eliminarProducto } = require("../controllers/productos.controller");
-const { validarCrearProducto } = require("../middlewares/productos.middlewares");
+const { mostrarProductos, crearProducto, eliminarProducto, editarProducto, mostrarProducto } = require("../controllers/productos.controller");
+const { validarCrearProducto, validarEditarProducto } = require("../middlewares/productos.middlewares");
 
 
 const router = Router();
 
 router.get("/", mostrarProductos);
+router.get("/:id", mostrarProducto);
 
 router.post("/", validarCrearProducto,  crearProducto);
 
-router.put("/:id", (req, res) => {
-    res.json({msg: "editar producto"});
-})
+router.put("/:id", validarEditarProducto, editarProducto)
 
 router.delete("/:id", eliminarProducto)
 

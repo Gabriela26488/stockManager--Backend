@@ -55,7 +55,34 @@ const validarCrearProducto = [
     .isString().withMessage("Ingresa una ruta de imagen valida"),
 ];
 
+const validarEditarProducto = [
+	body("nombre").exists().withMessage("Nombre es requerido").bail()
+    .isString().withMessage("Ingresa un nombre valido").bail()
+		.custom(async (nombre, { req }) => {
+			const producto = await Producto.findOne({nombre});
+			const productoEditado = await Producto.findById(req.params.id);
+			
+			if(producto && productoEditado.nombre !== nombre) throw new Error('nombre existente');
+
+			return true;
+		}),
+  body("descripcion").optional().bail()
+		.isString().withMessage("Ingresa una descripcion valida"),
+	body("cantidad").optional().bail()
+		.isNumeric().withMessage("Ingresa un monto valido").bail()
+		.custom(validaNegativo),
+	body("precio").optional().bail()
+		.isNumeric().withMessage("Ingresa un monto valido").bail()
+		.custom(validaNegativo),
+	body("categoria").optional().bail()
+		.isString().withMessage("Ingresa una categoria valida").bail()
+		.custom(verificarCategoria),
+	body("imagen").optional().bail()
+		.isString().withMessage("Ingresa una ruta de imagen valida"),
+]
+
 
 module.exports = {
-	validarCrearProducto
+	validarCrearProducto,
+	validarEditarProducto
 }
