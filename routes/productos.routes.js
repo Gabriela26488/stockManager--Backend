@@ -1,14 +1,13 @@
 const { Router } = require("express");
+const { mostrarProductos, crearProducto } = require("../controllers/productos.controller");
+const { validarCrearProducto } = require("../middlewares/productos.middlewares");
+
 
 const router = Router();
 
-router.get("/", (req, res) => {
-    res.json({msg: "mostrar productos"});
-})
+router.get("/", mostrarProductos);
 
-router.post("/", (req, res) => {
-    res.json({msg: "eliminar producto"});
-})
+router.post("/", validarCrearProducto,  crearProducto);
 
 router.put("/:id", (req, res) => {
     res.json({msg: "editar producto"});

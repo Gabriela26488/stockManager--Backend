@@ -16,6 +16,8 @@ class Server {
 
     this.dataBase();
 
+    this.middlewares();
+
     this.routes();
 
     this.listen();

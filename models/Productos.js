@@ -5,12 +5,10 @@ const ProductoSchema = Schema(
     nombre: {
       type: String,
       required: true,
-      lowercase: true,
     },
     descripcion: {
       type: String,
       required: true,
-      lowercase: true,
     },
     cantidad: {
       type: Number,
