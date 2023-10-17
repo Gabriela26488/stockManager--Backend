@@ -28,8 +28,7 @@ const crearProducto = async (req, res) => {
     await nuevoProducto.save();
 
     res.status(201).json(nuevoProducto);
-  
-} catch (err) {
+  } catch (err) {
     console.log(err);
     res.status(400).json(err);
   }
@@ -40,7 +39,23 @@ const editarProducto = async (req, res) => {
 };
 
 const eliminarProducto = async (req, res) => {
-  res.status(201).json("eliminar");
+  try {
+    const verificaExistencia = await Producto.findById(req.params.id);
+
+    if (!verificaExistencia) {
+      return res
+        .status(400)
+        .json({ msg: "el producto no se encuentra registrado" });
+    }
+
+    await Producto.findByIdAndDelete(req.params.id);
+    res
+      .status(200)
+      .json({ msg: "el producto ha sido eliminado correctamente" });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
 module.exports = {
