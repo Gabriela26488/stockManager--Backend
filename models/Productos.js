@@ -19,13 +19,13 @@ const ProductoSchema = Schema(
       required: true,
     },
     categoria: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     imagen: {
-        type: String,
-        required: true,
-    }
+      type: String,
+      required: true,
+    },
   },
   {
     timestamps: true,

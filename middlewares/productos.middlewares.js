@@ -1,5 +1,28 @@
 const { body } = require("express-validator");
+const multer = require("multer");
+const {extname} = require("path");
+
 const Producto = require("../models/Productos");
+
+
+const cargarImagen = multer({
+
+	storage: multer.diskStorage({
+	  destination: "public/images/productos",
+	  filename: async (req, file, cb) => {
+		const extension = extname(file.originalname);
+		const name = file.originalname.split(extension)[0];
+		cb(null, `${name}-${Date.now()}${extension}`);
+	  },
+	}),
+
+	fileFilter: (req, file, cb) => {
+	  if(["image/jpeg", "image/png"].includes(file.mimetype)) cb(null, true);
+	  else cb(new Error("solo acepta formato jpg y png"));
+  
+	},
+	
+}).single("imagen");
 
 const validaNombre = async (nombre) => {
   const producto = await Producto.findOne({ nombre });
@@ -49,10 +72,8 @@ const validarCrearProducto = [
 		.isNumeric().withMessage("Ingresa un monto valido").bail()
 		.custom(validaNegativo),
 	body("categoria").exists().withMessage("categoria es requerido").bail()
-	.isString().withMessage("Ingresa una categoria valida").bail()
-	.custom(verificarCategoria),
-	body("imagen").exists().withMessage("imagen es requerido").bail()
-    .isString().withMessage("Ingresa una ruta de imagen valida"),
+		.isString().withMessage("Ingresa una categoria valida").bail()
+		.custom(verificarCategoria)
 ];
 
 const validarEditarProducto = [
@@ -76,13 +97,12 @@ const validarEditarProducto = [
 		.custom(validaNegativo),
 	body("categoria").optional().bail()
 		.isString().withMessage("Ingresa una categoria valida").bail()
-		.custom(verificarCategoria),
-	body("imagen").optional().bail()
-		.isString().withMessage("Ingresa una ruta de imagen valida"),
+		.custom(verificarCategoria)
 ]
 
 
 module.exports = {
 	validarCrearProducto,
-	validarEditarProducto
+	validarEditarProducto,
+	cargarImagen,
 }
