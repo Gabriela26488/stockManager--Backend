@@ -50,6 +50,36 @@ const mostrarProducto = async (req, res) => {
   }
 };
 
+const buscarProducto = async (req, res) => {
+
+  try {
+    const nombre = req.params.nombre;
+    
+    const busqueda = await Producto.find({nombre: nombre}).exec();
+    res.status(200).json(busqueda);
+    
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+
+}
+
+const categoriaProducto = async (req, res) => {
+
+  try {
+    const categoria = req.params.categoria;
+    
+    const busqueda = await Producto.find({categoria: categoria}).exec();
+    res.status(200).json(busqueda);
+    
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+
+}
+
 const crearProducto = async (req, res) => {
   try {
     const validar = validarDatos(req);
@@ -161,4 +191,6 @@ module.exports = {
   editarProducto,
   editarImagen,
   eliminarProducto,
+  buscarProducto,
+  categoriaProducto,
 };

@@ -6,6 +6,8 @@ const {
   editarProducto,
   mostrarProducto,
   editarImagen,
+  buscarProducto,
+  categoriaProducto,
 } = require("../controllers/productos.controller");
 const {
   validarCrearProducto,
@@ -17,6 +19,8 @@ const router = Router();
 
 router.get("/", mostrarProductos);
 router.get("/:id", mostrarProducto);
+router.get("/buscar/:nombre", buscarProducto);
+router.get("/categoria/:categoria", categoriaProducto);
 
 router.post("/", cargarImagen, validarCrearProducto, crearProducto);
 
