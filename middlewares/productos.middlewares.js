@@ -4,7 +4,12 @@ const {extname} = require("path");
 
 const Producto = require("../models/Productos");
 
-
+/* 
+	la funcion "cargarImagen" sirve como middleware para 
+	guardar en el servidor las imagenes subidas al 
+	sistema, se utiliza el paquete "multer" para
+	manejar el proceso de carga 
+*/
 const cargarImagen = multer({
 
 	storage: multer.diskStorage({
@@ -24,6 +29,11 @@ const cargarImagen = multer({
 	
 }).single("imagen");
 
+/* 
+	la funcion "validaNombre" sirve para verificar si ya hay un
+	producto registrado con el nombre que se le pasa por
+	el parametro "nombre" 
+*/
 const validaNombre = async (nombre) => {
   const producto = await Producto.findOne({ nombre });
 
@@ -32,6 +42,7 @@ const validaNombre = async (nombre) => {
   return true;
 };
 
+// validaNegativo verifica si el numero pasado en el parametro producto es negativo
 const validaNegativo = async (numero) => {
   if (numero > 0) {
 		return true;
@@ -40,6 +51,10 @@ const validaNegativo = async (numero) => {
 	throw new Error("la cantidad no debe ser negativa o cero");
 };
 
+/* 
+	"verificarCategoria" valida si la categoria pasada por el parametro 
+	categoria se encuentra en la lista de categorias permitidas
+*/
 const verificarCategoria = (categoria) => {
   if (
     categoria === "carniceria" ||
@@ -59,6 +74,10 @@ const verificarCategoria = (categoria) => {
   throw new Error("categoría invalida");
 };
 
+/* 
+	"validarCrearProducto" hace uso del paquete express-validator para
+	realicar una lista de comprobaciones al momento de guardar un producto
+*/
 const validarCrearProducto = [
   body("nombre").exists().withMessage("Nombre es requerido").bail()
     .isString().withMessage("Ingresa un nombre valido").bail()
@@ -76,8 +95,12 @@ const validarCrearProducto = [
 		.custom(verificarCategoria)
 ];
 
+/* 
+	"validarCrearProducto" hace uso del paquete express-validator para
+	realicar una lista de comprobaciones al momento de editar un producto
+*/
 const validarEditarProducto = [
-	body("nombre").exists().withMessage("Nombre es requerido").bail()
+	body("nombre").optional().bail()
     .isString().withMessage("Ingresa un nombre valido").bail()
 		.custom(async (nombre, { req }) => {
 			const producto = await Producto.findOne({nombre});

@@ -1,5 +1,6 @@
 const { validationResult } = require("express-validator");
 const Producto = require("../models/Productos");
+const { read } = require("fs");
 const objId = require("mongoose").Types.ObjectId;
 const fs = require("fs").promises;
 
@@ -11,6 +12,7 @@ const validarDatos = (req) => {
   } else return null;
 };
 
+// duncion para validar si el id es un id correcto
 const validarId = (id) => {
   if (!objId.isValid(id)) {
     return false;
@@ -18,6 +20,7 @@ const validarId = (id) => {
   return true;
 };
 
+// controlador que devuelve la lista de productos registrados
 const mostrarProductos = async (req, res) => {
   try {
     const productos = await Producto.find();
@@ -28,6 +31,7 @@ const mostrarProductos = async (req, res) => {
   }
 };
 
+// controlador que devuelve un producto en especifico a traves del id
 const mostrarProducto = async (req, res) => {
   try {
     if (!validarId(req.params.id)) {
@@ -50,6 +54,7 @@ const mostrarProducto = async (req, res) => {
   }
 };
 
+// controlador que devuelve un producto en especifico a traves de su nombre
 const buscarProducto = async (req, res) => {
 
   try {
@@ -65,6 +70,7 @@ const buscarProducto = async (req, res) => {
 
 }
 
+// controlador que devuelve una lista de productos filtrados por categoria
 const categoriaProducto = async (req, res) => {
 
   try {
@@ -80,8 +86,10 @@ const categoriaProducto = async (req, res) => {
 
 }
 
+// controlador que se usa para agregar un producto a la bd
 const crearProducto = async (req, res) => {
   try {
+    
     const validar = validarDatos(req);
     if (validar) {
       await fs.unlink(`./${req.file.destination}/${req.file.filename}`);
@@ -100,6 +108,7 @@ const crearProducto = async (req, res) => {
   }
 };
 
+// controlador que se usa para editar un producto de la bd
 const editarProducto = async (req, res) => {
   try {
     if (!validarId(req.params.id)) {
@@ -131,6 +140,7 @@ const editarProducto = async (req, res) => {
   }
 };
 
+// controlador que permite cambiar la imagen de un producto editado
 const editarImagen = async (req, res) => {
   try {
     if (!validarId(req.params.id)) {
@@ -160,6 +170,7 @@ const editarImagen = async (req, res) => {
   }
 };
 
+// controlador que se usa para eliminar un producto de la bd
 const eliminarProducto = async (req, res) => {
   try {
     if (!validarId(req.params.id)) {
