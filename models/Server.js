@@ -15,6 +15,7 @@ class Server {
 
     this.path = {
       auth: "/api/auth",
+      usuarios: "/api/usuarios",
       productos: "/api/productos",
     };
 
@@ -48,6 +49,7 @@ class Server {
   // Metodo que carga las rutas
   routes() {
     this.app.use(this.path.auth, require("../routes/auth.routes"));
+    this.app.use(this.path.usuarios, require("../routes/usuarios.routes"));
     this.app.use(this.path.productos, require("../routes/productos.routes"));
   }
 

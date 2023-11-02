@@ -36,20 +36,24 @@ const crearCuenta = async (req, res) => {
 
 // controlador para iniciar sesion
 const login = async (req, res) => {
-  console.log(req.body);
-  if (!req.body.correo || !req.body.password)
-    return res.status(400).json({ msg: "Correo y contraseña requeridos" });
+  try {
+    if (!req.body.correo || !req.body.password)
+      return res.status(400).json({ msg: "Correo y contraseña requeridos" });
 
-  const usuario = await Usuario.findOne({ correo: req.body.correo });
-  if (!usuario) return res.status(400).json({ msg: "Correo no registrado" });
+    const usuario = await Usuario.findOne({ correo: req.body.correo });
+    if (!usuario) return res.status(400).json({ msg: "Correo no registrado" });
 
-  if (!usuario.estado)
-    return res.status(400).json({ msg: "El usuario se encuentra eliminado" });
+    if (!usuario.estado)
+      return res.status(400).json({ msg: "El usuario se encuentra eliminado" });
 
-  const isMatch = await usuario.comparePassword(req.body.password);
-  if (!isMatch) return res.status(400).json({ msg: "Contraseña incorrecta" });
+    const isMatch = await usuario.comparePassword(req.body.password);
+    if (!isMatch) return res.status(400).json({ msg: "Contraseña incorrecta" });
 
-  return res.status(200).json({ token: createToken(usuario) });
+    return res.status(200).json({ token: createToken(usuario) });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
 module.exports = {

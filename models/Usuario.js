@@ -36,11 +36,7 @@ const UsuarioSchema = Schema(
       type: Boolean,
       default: true,
     },
-    telefono: {
-      type: String,
-      unique: true,
-      trim: true,
-    },
+    telefono: String
   },
   {
     timestamps: true,
