@@ -23,7 +23,7 @@ const validarId = (id) => {
 const mostrarUsuarios = async (req, res) => {
   //   validar si el susuario tiene permisos para acceder a la funcion
   if (!ac.can(req.user.rol).readAny("usuario").granted)
-    return  res.status(401).json("Unauthorized");
+    return res.status(401).json("Unauthorized");
 
   try {
     // devuelve la lista de usuarios cuyo estado sea true, es decir, que no esten eliminados.
@@ -37,14 +37,21 @@ const mostrarUsuarios = async (req, res) => {
 
 // funcion que muestra los datos de un usuario
 const mostrarUnUsuario = async (req, res) => {
-  // la variable permiso recibe el valor de la validación del permiso
-  const permiso = ac.can(req.user.rol).readAny("usuario");
   // idValido recibe la validación del id
   const idValido = validarId(req.params.id);
+	if (!idValido) return res.status(401).json({ msg: "El id es incorrecto" });
 
-  if (!permiso.granted)
-    return  res.status(401).json("Unauthorized");
-  if (!idValido) return res.status(401).json({ msg: "El id es incorrecto" });
+	// la variable permiso recibe el valor de la validación del permiso
+  const permiso = ac.can(req.user.rol).readAny("usuario");
+	// verifyId valida si el id enviado en la url es igual al id logueado
+	const verifyId =
+      req.user._id.toString() === req.params.id ? true : false;
+
+	// si el usuario administrador o el usuario logueado no es el que esta solicitando los datos
+	// devolvemos error de autorizacion
+	if (!permiso.granted && !verifyId) {
+		return res.status(401).json("Unauthorized");
+	}
 
   try {
     const usuario = await Usuario.findById(req.params.id);
@@ -59,7 +66,7 @@ const mostrarUnUsuario = async (req, res) => {
 // funcion para crear usuario
 const crearUsuario = async (req, res) => {
   if (!ac.can(req.user.rol).createAny("usuario").granted)
-    return  res.status(401).json("Unauthorized");
+    return res.status(401).json("Unauthorized");
 
   try {
     const validar = validarDatos(req);
@@ -76,16 +83,75 @@ const crearUsuario = async (req, res) => {
   }
 };
 
+// funcion para editar los datos de un usuario
 const editarUsuario = async (req, res) => {
-  res.status(200).json({ msg: "editar usuario" });
+  // idValido recibe la validación del id
+  const idValido = validarId(req.params.id);
+	if (!idValido) return res.status(401).json({ msg: "El id es incorrecto" });
+
+	// la variable permiso recibe el valor de la validación del permiso
+  const permiso = ac.can(req.user.rol).updateAny("usuario");
+	// verifyId valida si el id enviado en la url es igual al id logueado
+	const verifyId =
+      req.user._id.toString() === req.params.id ? true : false;
+
+	// si el usuario administrador o el usuario logueado no es el que esta solicitando los cambios
+	// devolvemos error de autorización
+	if (!permiso.granted && !verifyId) {
+		return res.status(401).json("Unauthorized");
+	}
+
+  try {
+    const validar = validarDatos(req);
+
+    if (validar) return res.status(400).json(validar);
+
+    const actualizado = await Usuario.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      {
+        new: true,
+      }
+    );
+
+    return res.status(200).json({ msg: "Usuario actualizado", actualizado });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
+// funcion para borrar los datos de un usuario
 const eliminarUsuario = async (req, res) => {
-  res.status(200).json({ msg: "eliminar usuario" });
+  const permission = ac.can(req.user.rol).deleteAny("usuario");
+  const idValido = validarId(req.params.id);
+
+  if (!permission.granted) return res.status(401).json("Unauthorized");
+  if (!idValido) return res.status(401).json({ msg: "El id es incorrecto" });
+
+  try {
+    await Usuario.findByIdAndUpdate(
+      req.params.id,
+      { estado: false },
+      { new: true }
+    );
+
+    return res.status(200).json("Usuario eliminado");
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
+// funcion que devuelve los datos del usuario logueado
 const verificarLogin = async (req, res) => {
-  res.status(200).json({ msg: "verificar login" });
+  try {
+    const datos = req.user;
+    res.status(200).json(datos);
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
 };
 
 module.exports = {
