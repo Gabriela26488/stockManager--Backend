@@ -1,6 +1,6 @@
 const { validationResult } = require("express-validator");
 const Producto = require("../models/Productos");
-const { read } = require("fs");
+const Favorito = require("../models/Favoritos");
 const objId = require("mongoose").Types.ObjectId;
 const fs = require("fs").promises;
 
@@ -12,7 +12,7 @@ const validarDatos = (req) => {
   } else return null;
 };
 
-// duncion para validar si el id es un id correcto
+// funcion para validar si el id es un id correcto
 const validarId = (id) => {
   if (!objId.isValid(id)) {
     return false;
@@ -56,40 +56,36 @@ const mostrarProducto = async (req, res) => {
 
 // controlador que devuelve un producto en especifico a traves de su nombre
 const buscarProducto = async (req, res) => {
-
   try {
-    const nombre = req.params.nombre;
-    
-    const busqueda = await Producto.find({nombre: nombre}).exec();
+    const buscar = new RegExp(req.params.nombre, "i");
+
+    const busqueda = await Producto.find({ nombre: buscar }).exec();
     res.status(200).json(busqueda);
-    
   } catch (err) {
     console.log(err);
     res.status(400).json(err);
   }
-
-}
+};
 
 // controlador que devuelve una lista de productos filtrados por categoria
 const categoriaProducto = async (req, res) => {
-
   try {
     const categoria = req.params.categoria;
-    
-    const busqueda = await Producto.find({categoria: categoria}).exec();
+
+    const busqueda = await Producto.find({ categoria: categoria }).exec();
     res.status(200).json(busqueda);
-    
   } catch (err) {
     console.log(err);
     res.status(400).json(err);
   }
-
-}
+};
 
 // controlador que se usa para agregar un producto a la bd
 const crearProducto = async (req, res) => {
   try {
-    
+    if (!ac.can(req.user.rol).createAny("producto").granted)
+      return res.status(401).json("Unauthorized");
+
     const validar = validarDatos(req);
     if (validar) {
       await fs.unlink(`./${req.file.destination}/${req.file.filename}`);
@@ -111,9 +107,11 @@ const crearProducto = async (req, res) => {
 // controlador que se usa para editar un producto de la bd
 const editarProducto = async (req, res) => {
   try {
-    if (!validarId(req.params.id)) {
+    if (!ac.can(req.user.rol).updateAny("producto").granted)
+      return res.status(401).json("Unauthorized");
+    if (!validarId(req.params.id))
       return res.status(400).json({ msg: "el id ingresado no es invalido" });
-    }
+
     const verificaExistencia = await Producto.findById(req.params.id);
 
     if (!verificaExistencia) {
@@ -142,6 +140,8 @@ const editarProducto = async (req, res) => {
 
 // controlador que permite cambiar la imagen de un producto editado
 const editarImagen = async (req, res) => {
+  if (!ac.can(req.user.rol).updateAny("producto").granted)
+    return res.status(401).json("Unauthorized");
   try {
     if (!validarId(req.params.id)) {
       return res.status(400).json({ msg: "el id ingresado no es invalido" });
@@ -153,7 +153,7 @@ const editarImagen = async (req, res) => {
         .status(400)
         .json({ msg: "el producto no se encuentra registrado" });
     }
-    
+
     const imagen = `/images/productos/${req.file.filename}`;
     const update = await Producto.findByIdAndUpdate(
       req.params.id,
@@ -173,6 +173,8 @@ const editarImagen = async (req, res) => {
 // controlador que se usa para eliminar un producto de la bd
 const eliminarProducto = async (req, res) => {
   try {
+    if (!ac.can(req.user.rol).deleteAny("producto").granted)
+      return res.status(401).json("Unauthorized");
     if (!validarId(req.params.id)) {
       return res.status(400).json({ msg: "el id ingresado no es invalido" });
     }
@@ -195,6 +197,34 @@ const eliminarProducto = async (req, res) => {
   }
 };
 
+const agregarFavorito = async (req, res) => {
+  try {
+    const idUsuario = req.user._id;
+    const idProducto = req.params.id;
+
+    if (!validarId(idProducto)) {
+      return res.status(400).json({ msg: "el id del producto ingresado no es invalido" });
+    }
+
+    const listaUsuariosFavorito = await Favorito.findOne({ idUsuario });
+
+    if (listaUsuariosFavorito) {
+      await Favorito.updateOne(
+        { idUsuario },
+        { $push: { idProductos: idProducto } }
+      );
+      res.status(200).json({ msg: "Favorito agregado" });
+    } else {
+      const favorito = new Favorito({ idUsuario, idProductos: [idProducto] });
+      await favorito.save();
+      res.status(200).json(favorito);
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+};
+
 module.exports = {
   mostrarProductos,
   mostrarProducto,
@@ -204,4 +234,5 @@ module.exports = {
   eliminarProducto,
   buscarProducto,
   categoriaProducto,
+  agregarFavorito,
 };
