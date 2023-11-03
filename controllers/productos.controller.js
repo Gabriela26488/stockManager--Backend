@@ -1,6 +1,7 @@
 const { validationResult } = require("express-validator");
 const Producto = require("../models/Productos");
 const Favorito = require("../models/Favoritos");
+const Productos = require("../models/Productos");
 const objId = require("mongoose").Types.ObjectId;
 const fs = require("fs").promises;
 
@@ -197,6 +198,34 @@ const eliminarProducto = async (req, res) => {
   }
 };
 
+const favoritos = async (req, res) => {
+  try {
+    const idUsuario = req.user._id;
+
+    const listaFavoritos = await Favorito.findOne({ idUsuario });
+
+    if (listaFavoritos) {
+      const listaDeProductos = await Productos.find();
+
+      const favoritos = [];
+      await listaFavoritos.idProductos.forEach(idProducto => {
+        listaDeProductos.forEach(producto => {
+          if (idProducto.toString() === producto._id.toString()) {
+            favoritos.push(producto);
+          }
+        })
+      });
+
+      res.status(200).json(favoritos);
+    } else {
+      res.status(200).json([]);
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+};
+
 const agregarFavorito = async (req, res) => {
   try {
     const idUsuario = req.user._id;
@@ -225,6 +254,32 @@ const agregarFavorito = async (req, res) => {
   }
 };
 
+const borrarFavorito = async (req, res) => {
+  try {
+    const idUsuario = req.user._id;
+    const idProducto = req.params.id;
+
+    if (!validarId(idProducto)) {
+      return res.status(400).json({ msg: "el id del producto ingresado no es invalido" });
+    }
+
+    const listaUsuariosFavorito = await Favorito.findOne({ idUsuario });
+
+    if (listaUsuariosFavorito) {
+      await Favorito.updateOne(
+        { idUsuario },
+        { $pull: { idProductos: idProducto } }
+      );
+      res.status(200).json({ msg: "Favorito borrado" });
+    } else {
+      return res.status(400).json({ msg: "El usuario no tiene favoritos" });
+    }
+  } catch (err) {
+    console.log(err);
+    res.status(400).json(err);
+  }
+};
+
 module.exports = {
   mostrarProductos,
   mostrarProducto,
@@ -234,5 +289,7 @@ module.exports = {
   eliminarProducto,
   buscarProducto,
   categoriaProducto,
+  favoritos,
   agregarFavorito,
+  borrarFavorito,
 };

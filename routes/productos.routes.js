@@ -9,6 +9,8 @@ const {
   buscarProducto,
   categoriaProducto,
   agregarFavorito,
+  favoritos,
+  borrarFavorito,
 } = require("../controllers/productos.controller");
 const {
   validarCrearProducto,
@@ -31,6 +33,8 @@ router.post("/", cargarImagen, [auth, validarCrearProducto], crearProducto);
 router.put("/:id", [auth, validarEditarProducto], editarProducto);
 router.put("/imagen/:id", cargarImagen, editarImagen);
 router.delete("/:id", auth, eliminarProducto);
+router.get("/favoritos/lista", auth, favoritos);
 router.get("/agregar/favorito/:id", auth, agregarFavorito);
+router.delete("/borrar/favorito/:id", auth, borrarFavorito);
 
 module.exports = router;
