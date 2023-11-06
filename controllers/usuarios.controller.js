@@ -130,10 +130,8 @@ const eliminarUsuario = async (req, res) => {
   if (!idValido) return res.status(401).json({ msg: "El id es incorrecto" });
 
   try {
-    await Usuario.findByIdAndUpdate(
-      req.params.id,
-      { estado: false },
-      { new: true }
+    await Usuario.findByIdAndDelete(
+      req.params.id
     );
 
     return res.status(200).json("Usuario eliminado");

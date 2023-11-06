@@ -113,8 +113,7 @@ const validarEditarProducto = [
   body("descripcion").optional().bail()
 		.isString().withMessage("Ingresa una descripcion valida"),
 	body("cantidad").optional().bail()
-		.isNumeric().withMessage("Ingresa un monto valido").bail()
-		.custom(validaNegativo),
+		.isNumeric().withMessage("Ingresa un monto valido").bail(),
 	body("precio").optional().bail()
 		.isNumeric().withMessage("Ingresa un monto valido").bail()
 		.custom(validaNegativo),

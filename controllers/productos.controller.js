@@ -4,6 +4,7 @@ const Favorito = require("../models/Favoritos");
 const Productos = require("../models/Productos");
 const objId = require("mongoose").Types.ObjectId;
 const fs = require("fs").promises;
+const ac = require("../middlewares/roles");
 
 // funcion que valida si se encontraron errores en el express-validator
 const validarDatos = (req) => {
